@@ -9,27 +9,45 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Properties;
 
 public class BaseTest {
 
     WebDriver driver;
     Page page;
 
+    private Properties properties;
+
+
+    public BaseTest(){
+       String filePath =  System.getProperty("user.dir") + "/src/test/resources/config.properties";
+        try {
+            properties=new Properties();
+            FileInputStream inputStream=new FileInputStream(filePath);
+            properties.load(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @BeforeMethod
     public void setupBrowser(){
-        String browserName = "firefox";
+        String browserName = properties.getProperty("browserName");
         if (Objects.equals(browserName,"firefox")){
-            WebDriverManager.firefoxdriver().setup();
+          WebDriverManager.firefoxdriver().setup();
             driver = new FirefoxDriver();
         } else if (Objects.equals(browserName,"Chrome")) {
 
-            WebDriverManager.chromiumdriver().setup();
+           WebDriverManager.chromiumdriver().setup();
 
             driver = new ChromeDriver();
         } else if (Objects.equals(browserName,"headless")) {
 
-            WebDriverManager.chromiumdriver().setup();
+          WebDriverManager.chromiumdriver().setup();
 
             driver = new ChromeDriver();
         }else {
@@ -37,7 +55,7 @@ public class BaseTest {
         }
 
         driver.manage().window().maximize();
-        driver.get("");
+        driver.get(properties.getProperty("baseUrl"));
 
         page=new BasePage(driver);
 
@@ -47,5 +65,15 @@ public class BaseTest {
     @AfterMethod
     public void closeBrowser(){
 
+        driver.quit();
+
+    }
+
+    public String getUsername(){
+        return properties.getProperty("username");
+    }
+
+    public String getPassword(){
+        return properties.getProperty("password");
     }
 }
